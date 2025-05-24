@@ -130,7 +130,6 @@
     <div class="button-container">
         <button onclick="parseData()">Parse Data</button>
         <button onclick="clearData()">Clear</button>
-        <button onclick="copyProcessedData()">Copy Processed Data</button>
         <button onclick="exportToCSV()">Export to CSV</button>
     </div>
     <div id="debug"></div>
@@ -182,11 +181,9 @@
 
                     if(text.match(/^B-[A-Z0-9]+$/)) {
                         blockId = text;
-                        console.log('Found Block ID:', text);
                     }
                     else if(text.match(/^[A-Z]{3}[0-9]$/) && !domicile) {
                         domicile = text;
-                        console.log('Found Domicile:', text);
                     }
                     else if(text.includes('PDT -') || text.includes('EDT -') || 
                             text.includes('CDT -') || text.includes('MDT -') ||
@@ -196,7 +193,6 @@
                         if(times.length === 2) {
                             startTime = times[0].trim();
                             endTime = times[1].replace(/<br>|\n/g, '').trim();
-                            console.log('Found times:', startTime, '-', endTime);
                         }
                     }
                     else if(text.match(/^\d+h(\d+m)?$/)) {
@@ -213,7 +209,6 @@
                                 minutes = "00";
                             }
                         }
-                        console.log('Found Duration:', hours + 'h' + minutes + 'm');
                     }
                 }
 
@@ -223,7 +218,6 @@
                         const costMatch = p.textContent.match(/\$[\d,]+\.\d{2}/);
                         if(costMatch) {
                             cost = costMatch[0];
-                            console.log('Found Cost:', cost);
                             break;
                         }
                     }
