@@ -1,75 +1,162 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Block Data Parser</title>
+    <title>Enhanced Block Data Parser</title>
     <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
         table { 
             width: 100%; 
             border-collapse: collapse; 
             margin-top: 20px;
+            font-size: 14px;
         }
+
         th, td { 
-            border: 1px solid black; 
-            padding: 8px; 
+            border: 1px solid #ddd; 
+            padding: 12px 8px; 
             text-align: left;
         }
+
+        th {
+            background-color: #f4f4f4;
+            position: sticky;
+            top: 0;
+        }
+
         .matched { 
             background-color: #90EE90; 
         }
+
+        .not-matched {
+            background-color: #ffcccb;
+        }
+
         textarea { 
             width: 100%; 
-            height: 150px; 
+            height: 200px; 
             margin: 10px 0;
-            padding: 10px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
         }
+
         #debug { 
             margin: 10px 0; 
-            padding: 10px; 
-            background: #f5f5f5;
-            border: 1px solid #ddd;
+            padding: 15px;
+            background: #f8f8f8;
+            border-radius: 4px;
+            border-left: 4px solid #4CAF50;
         }
+
         .button-container {
-            margin: 10px 0;
+            margin: 15px 0;
+            display: flex;
+            gap: 10px;
         }
+
         button {
-            padding: 8px 15px;
-            margin-righight: 10px;
+            padding: 10px 20px;
             cursor: pointer;
             background-color: #4CAF50;
             color: white;
             border: none;
             border-radius: 4px;
+            transition: background-color 0.3s;
         }
+
         button:hover {
             background-color: #45a049;
+        }
+
+        select {
+            width: 100%;
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .error {
+            border-left: 4px solid #ff4444;
+        }
+
+        .success {
+            border-left: 4px solid #4CAF50;
+        }
+
+        .highlight {
+            animation: highlightRow 1s ease-in-out;
+        }
+
+        @keyframes highlightRow {
+            0% { background-color: #ffffff; }
+            50% { background-color: #e0ffe0; }
+            100% { background-color: #ffffff; }
+        }
+
+        #copyNotification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            display: none;
+            animation: fadeInOut 2s ease-in-out;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            15% { opacity: 1; }
+            85% { opacity: 1; }
+            100% { opacity: 0; }
         }
     </style>
 </head>
 <body>
-    <h2>Block Data Parser</h2>
+    <h2>Enhanced Block Data Parser</h2>
     <textarea id="rawData" placeholder="Paste your data here..."></textarea>
     <div class="button-container">
         <button onclick="parseData()">Parse Data</button>
         <button onclick="clearData()">Clear</button>
         <button onclick="copyProcessedData()">Copy Processed Data</button>
+        <button onclick="exportToCSV()">Export to CSV</button>
     </div>
-    <div id="debug"></></div>
-    <table id="resultTable">
-        <tr>
-            <th>Blocks</th>
-            <th>Domiciles</th>
-            <th>Block Cost</th>
-            <th>Matched/Not matched</th>
-            <th>RLB Cost</th>
-            <th>*Opportunity*</th>
-            <th>Hours</th>
-            <th>Minutes</th>
-            <th>Block start time</th>
-            <th>Block end time</th>
-            <th>Comments</th>
-            <th>MMRO or NON MMRO</th>
-        </tr>
-    </table>
+    <div id="debug"></div>
+    <div id="copyNotification">Row copied to clipboard!</div>
+    <div style="overflow-x: auto;">
+        <table id="resultTable">
+            <thead>
+                <tr>
+                    <th>Blocks</th>
+                    <th>Domiciles</th>
+                    <th>Block Cost</th>
+                    <th>Status</th>
+                    <th>RLB Cost</th>
+                    <th>Opportunity</th>
+                    <th>Hours</th>
+                    <th>Minutes</th>
+                    <th>Block start time</th>
+                    <th>Block end time</th>
+                    <th>Comments</th>
+                    <th>MMRO Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
     <script>
         function parseData() {
@@ -88,23 +175,19 @@
                 let minutes = '';
                 let cost = '';
 
-                // Process all spans
                 const spans = temp.getElementsByTagName('span');
                 for(let span of spans) {
                     const text = span.textContent.trim();
                     console.log('Checking text:', text);
 
-                    // Block ID
                     if(text.match(/^B-[A-Z0-9]+$/)) {
                         blockId = text;
                         console.log('Found Block ID:', text);
                     }
-                    // Domicile
                     else if(text.match(/^[A-Z]{3}[0-9]$/) && !domicile) {
                         domicile = text;
                         console.log('Found Domicile:', text);
                     }
-                    // Times
                     else if(text.includes('PDT -') || text.includes('EDT -') || 
                             text.includes('CDT -') || text.includes('MDT -') ||
                             text.includes('PST -') || text.includes('EST -') || 
@@ -116,17 +199,14 @@
                             console.log('Found times:', startTime, '-', endTime);
                         }
                     }
-                    // Duration - updated to handle both formats
                     else if(text.match(/^\d+h(\d+m)?$/)) {
                         if(text.includes('m')) {
-                            // Format: "9h30m"
                             const durationMatch = text.match(/(\d+)h(\d+)m/);
                             if(durationMatch) {
                                 hours = durationMatch[1];
                                 minutes = durationMatch[2];
                             }
                         } else {
-                            // Format: "9h"
                             const durationMatch = text.match(/(\d+)h/);
                             if(durationMatch) {
                                 hours = durationMatch[1];
@@ -137,7 +217,6 @@
                     }
                 }
 
-                // Extract Cost specifically
                 const paragraphs = temp.getElementsByTagName('p');
                 for(let p of paragraphs) {
                     if(p.textContent.includes('Total Cost:')) {
@@ -150,17 +229,6 @@
                     }
                 }
 
-                console.log('Final values:', {
-                    blockId,
-                    domicile,
-                    cost,
-                    hours,
-                    minutes,
-                    startTime,
-                    endTime
-                });
-
-                // Add to table
                 addTableRow({
                     blockId,
                     domicile,
@@ -171,12 +239,40 @@
                     endTime
                 });
 
-                document.getElementById('debug').innerHTML = 'Data processed successfully';
+                showMessage('Data processed successfully');
 
             } catch(error) {
-                document.getElementById('debug').innerHTML = 'Error: ' + error.message;
+                showMessage('Error: ' + error.message, true);
                 console.error(error);
             }
+        }
+
+        function copyRowToClipboard(row) {
+            const rowData = [];
+            
+            for (let j = 0; j < row.cells.length - 1; j++) {
+                const cell = row.cells[j];
+                if (cell.querySelector('select')) {
+                    rowData.push(cell.querySelector('select').value);
+                } else {
+                    rowData.push(cell.textContent.trim());
+                }
+            }
+            
+            const text = rowData.join('\t');
+            navigator.clipboard.writeText(text).then(() => {
+                const notification = document.getElementById('copyNotification');
+                notification.style.display = 'block';
+                
+                row.classList.add('highlight');
+                
+                setTimeout(() => {
+                    row.classList.remove('highlight');
+                    notification.style.display = 'none';
+                }, 2000);
+            }).catch(err => {
+                showMessage('Error copying data: ' + err, true);
+            });
         }
 
         function addTableRow(data) {
@@ -191,8 +287,8 @@
             matchedCell.textContent = 'Matched';
             matchedCell.className = 'matched';
 
-            row.insertCell(4).textContent = ''; // RLB Cost
-            row.insertCell(5).textContent = ''; // *Opportunity*
+            row.insertCell(4).textContent = '';
+            row.insertCell(5).textContent = '';
             row.insertCell(6).textContent = data.hours || '';
             row.insertCell(7).textContent = data.minutes || '';
             row.insertCell(8).textContent = data.startTime || '';
@@ -205,6 +301,7 @@
                 <option>VRID added within 8 hrs to block start time</option>
                 <option>VRID added with 12-34 hrs to block start time</option>
             `;
+            commentSelect.addEventListener('change', () => copyRowToClipboard(row));
             commentCell.appendChild(commentSelect);
 
             const mmroCell = row.insertCell(11);
@@ -214,7 +311,15 @@
                 <option>MMRO</option>
                 <option>NON MMRO</option>
             `;
+            mmroSelect.addEventListener('change', () => copyRowToClipboard(row));
             mmroCell.appendChild(mmroSelect);
+
+            const actionCell = row.insertCell(12);
+            const deleteBtn = document.createElement('button');
+            deleteBtn.innerHTML = '🗑️';
+            deleteBtn.onclick = function() { deleteRow(this); };
+            deleteBtn.style.backgroundColor = '#ff4444';
+            actionCell.appendChild(deleteBtn);
         }
 
         function clearData() {
@@ -226,34 +331,51 @@
             document.getElementById('debug').innerHTML = '';
         }
 
-        function copyProcessedData() {
+        function deleteRow(btn) {
+            const row = btn.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        }
+
+        function showMessage(message, isError = false) {
+            const debug = document.getElementById('debug');
+            debug.textContent = message;
+            debug.className = isError ? 'error' : 'success';
+            setTimeout(() => {
+                debug.className = '';
+                debug.textContent = '';
+            }, 3000);
+        }
+
+        function exportToCSV() {
             const table = document.getElementById('resultTable');
-            // Get only the last row (processed data)
-            const lastRow = table.rows[table.rows.length - 1];
-            if (lastRow) {
-                const rowData = [];
-                
-                // Get all cells in the row
-                for (let j = 0; j < lastRow.cells.length; j++) {
-                    const cell = lastRow.cells[j];
-                    // Handle dropdown menus
-                    if (cell.querySelector('select')) {
-                        rowData.push(cell.querySelector('select').value);
-                    } else {
-                        rowData.push(cell.textContent.trim());
-                    }
-                }
-                
-                // Copy only the processed data row
-                const text = rowData.join('\t');
-                navigator.clipboard.writeText(text).then(() => {
-                    document.getElementById('debug').innerHTML = 'Processed data copied to clipboard';
-                }).catch(err => {
-                    document.getElementById('debug').innerHTML = 'Error copying data: ' + err;
-                });
-            } else {
-                document.getElementById('debug').innerHTML = 'No data to copy';
+            let csv = [];
+            
+            let headers = [];
+            for(let i = 0; i < table.rows[0].cells.length - 1; i++) {
+                headers.push(table.rows[0].cells[i].innerText);
             }
+            csv.push(headers.join(','));
+            
+            for(let i = 1; i < table.rows.length; i++) {
+                let row = [];
+                for(let j = 0; j < table.rows[i].cells.length - 1; j++) {
+                    let cell = table.rows[i].cells[j];
+                    let value = cell.querySelector('select') ? 
+                              cell.querySelector('select').value : 
+                              cell.innerText;
+                    row.push(`"${value}"`);
+                }
+                csv.push(row.join(','));
+            }
+            
+            const csvContent = csv.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', 'block_data.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 </body>
