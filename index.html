@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Block Data Parser</title>
+    <style>
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px;
+        }
+        th, td { 
+            border: 1px solid black; 
+            padding: 8px; 
+            text-align: left;
+        }
+        .matched { 
+            background-color: #90EE90; 
+        }
+        textarea { 
+            width: 100%; 
+            height: 150px; 
+            margin: 10px 0;
+            padding: 10px;
+        }
+        #debug { 
+            margin: 10px 0; 
+            padding: 10px; 
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+        }
+        .button-container {
+            margin: 10px 0;
+        }
+        button {
+            padding: 8px 15px;
+            margin-righight: 10px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h2>Block Data Parser</h2>
+    <textarea id="rawData" placeholder="Paste your data here..."></textarea>
+    <div class="button-container">
+        <button onclick="parseData()">Parse Data</button>
+        <button onclick="clearData()">Clear</button>
+        <button onclick="copyProcessedData()">Copy Processed Data</button>
+    </div>
+    <div id="debug"></></div>
+    <table id="resultTable">
+        <tr>
+            <th>Blocks</th>
+            <th>Domiciles</th>
+            <th>Block Cost</th>
+            <th>Matched/Not matched</th>
+            <th>RLB Cost</th>
+            <th>*Opportunity*</th>
+            <th>Hours</th>
+            <th>Minutes</th>
+            <th>Block start time</th>
+            <th>Block end time</th>
+            <th>Comments</th>
+            <th>MMRO or NON MMRO</th>
+        </tr>
+    </table>
+
+    <script>
+        function parseData() {
+            const rawData = document.getElementById('rawData').value;
+            document.getElementById('debug').innerHTML = 'Processing...';
+
+            try {
+                const temp = document.createElement('div');
+                temp.innerHTML = rawData;
+
+                let blockId = '';
+                let domicile = '';
+                let startTime = '';
+                let endTime = '';
+                let hours = '';
+                let minutes = '';
+                let cost = '';
+
+                // Process all spans
+                const spans = temp.getElementsByTagName('span');
+                for(let span of spans) {
+                    const text = span.textContent.trim();
+                    console.log('Checking text:', text);
+
+                    // Block ID
+                    if(text.match(/^B-[A-Z0-9]+$/)) {
+                        blockId = text;
+                        console.log('Found Block ID:', text);
+                    }
+                    // Domicile
+                    else if(text.match(/^[A-Z]{3}[0-9]$/) && !domicile) {
+                        domicile = text;
+                        console.log('Found Domicile:', text);
+                    }
+                    // Times
+                    else if(text.includes('PDT -') || text.includes('EDT -') || 
+                            text.includes('CDT -') || text.includes('MDT -') ||
+                            text.includes('PST -') || text.includes('EST -') || 
+                            text.includes('CST -') || text.includes('MST -')) {
+                        const times = text.split('-');
+                        if(times.length === 2) {
+                            startTime = times[0].trim();
+                            endTime = times[1].replace(/<br>|\n/g, '').trim();
+                            console.log('Found times:', startTime, '-', endTime);
+                        }
+                    }
+                    // Duration - updated to handle both formats
+                    else if(text.match(/^\d+h(\d+m)?$/)) {
+                        if(text.includes('m')) {
+                            // Format: "9h30m"
+                            const durationMatch = text.match(/(\d+)h(\d+)m/);
+                            if(durationMatch) {
+                                hours = durationMatch[1];
+                                minutes = durationMatch[2];
+                            }
+                        } else {
+                            // Format: "9h"
+                            const durationMatch = text.match(/(\d+)h/);
+                            if(durationMatch) {
+                                hours = durationMatch[1];
+                                minutes = "00";
+                            }
+                        }
+                        console.log('Found Duration:', hours + 'h' + minutes + 'm');
+                    }
+                }
+
+                // Extract Cost specifically
+                const paragraphs = temp.getElementsByTagName('p');
+                for(let p of paragraphs) {
+                    if(p.textContent.includes('Total Cost:')) {
+                        const costMatch = p.textContent.match(/\$[\d,]+\.\d{2}/);
+                        if(costMatch) {
+                            cost = costMatch[0];
+                            console.log('Found Cost:', cost);
+                            break;
+                        }
+                    }
+                }
+
+                console.log('Final values:', {
+                    blockId,
+                    domicile,
+                    cost,
+                    hours,
+                    minutes,
+                    startTime,
+                    endTime
+                });
+
+                // Add to table
+                addTableRow({
+                    blockId,
+                    domicile,
+                    cost,
+                    hours,
+                    minutes,
+                    startTime,
+                    endTime
+                });
+
+                document.getElementById('debug').innerHTML = 'Data processed successfully';
+
+            } catch(error) {
+                document.getElementById('debug').innerHTML = 'Error: ' + error.message;
+                console.error(error);
+            }
+        }
+
+        function addTableRow(data) {
+            const table = document.getElementById('resultTable');
+            const row = table.insertRow(-1);
+            
+            row.insertCell(0).textContent = data.blockId || '';
+            row.insertCell(1).textContent = data.domicile || '';
+            row.insertCell(2).textContent = data.cost || '';
+            
+            const matchedCell = row.insertCell(3);
+            matchedCell.textContent = 'Matched';
+            matchedCell.className = 'matched';
+
+            row.insertCell(4).textContent = ''; // RLB Cost
+            row.insertCell(5).textContent = ''; // *Opportunity*
+            row.insertCell(6).textContent = data.hours || '';
+            row.insertCell(7).textContent = data.minutes || '';
+            row.insertCell(8).textContent = data.startTime || '';
+            row.insertCell(9).textContent = data.endTime || '';
+            
+            const commentCell = row.insertCell(10);
+            const commentSelect = document.createElement('select');
+            commentSelect.innerHTML = `
+                <option value=""></option>
+                <option>VRID added within 8 hrs to block start time</option>
+                <option>VRID added with 12-34 hrs to block start time</option>
+            `;
+            commentCell.appendChild(commentSelect);
+
+            const mmroCell = row.insertCell(11);
+            const mmroSelect = document.createElement('select');
+            mmroSelect.innerHTML = `
+                <option value=""></option>
+                <option>MMRO</option>
+                <option>NON MMRO</option>
+            `;
+            mmroCell.appendChild(mmroSelect);
+        }
+
+        function clearData() {
+            const table = document.getElementById('resultTable');
+            while(table.rows.length > 1) {
+                table.deleteRow(1);
+            }
+            document.getElementById('rawData').value = '';
+            document.getElementById('debug').innerHTML = '';
+        }
+
+        function copyProcessedData() {
+            const table = document.getElementById('resultTable');
+            // Get only the last row (processed data)
+            const lastRow = table.rows[table.rows.length - 1];
+            if (lastRow) {
+                const rowData = [];
+                
+                // Get all cells in the row
+                for (let j = 0; j < lastRow.cells.length; j++) {
+                    const cell = lastRow.cells[j];
+                    // Handle dropdown menus
+                    if (cell.querySelector('select')) {
+                        rowData.push(cell.querySelector('select').value);
+                    } else {
+                        rowData.push(cell.textContent.trim());
+                    }
+                }
+                
+                // Copy only the processed data row
+                const text = rowData.join('\t');
+                navigator.clipboard.writeText(text).then(() => {
+                    document.getElementById('debug').innerHTML = 'Processed data copied to clipboard';
+                }).catch(err => {
+                    document.getElementById('debug').innerHTML = 'Error copying data: ' + err;
+                });
+            } else {
+                document.getElementById('debug').innerHTML = 'No data to copy';
+            }
+        }
+    </script>
+</body>
+</html>
