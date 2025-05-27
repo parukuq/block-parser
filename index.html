@@ -79,7 +79,7 @@
             background-color: #45a049;
         }
 
-        select {
+        select, input {
             width: 100%;
             padding: 6px;
             border-radius: 4px;
@@ -248,6 +248,8 @@
                 const cell = row.cells[j];
                 if (cell.querySelector('select')) {
                     rowData.push(cell.querySelector('select').value);
+                } else if (cell.querySelector('input')) {
+                    rowData.push(cell.querySelector('input').value);
                 } else {
                     rowData.push(cell.textContent.trim());
                 }
@@ -282,7 +284,14 @@
             matchedCell.className = 'matched';
 
             row.insertCell(4).textContent = '';
-            row.insertCell(5).textContent = '';
+
+            const opportunityCell = row.insertCell(5);
+            const opportunityInput = document.createElement('input');
+            opportunityInput.type = 'text';
+            opportunityInput.placeholder = 'Paste opportunity here';
+            opportunityInput.style.width = '100%';
+            opportunityCell.appendChild(opportunityInput);
+
             row.insertCell(6).textContent = data.hours || '';
             row.insertCell(7).textContent = data.minutes || '';
             row.insertCell(8).textContent = data.startTime || '';
@@ -354,9 +363,14 @@
                 let row = [];
                 for(let j = 0; j < table.rows[i].cells.length - 1; j++) {
                     let cell = table.rows[i].cells[j];
-                    let value = cell.querySelector('select') ? 
-                              cell.querySelector('select').value : 
-                              cell.innerText;
+                    let value;
+                    if (cell.querySelector('select')) {
+                        value = cell.querySelector('select').value;
+                    } else if (cell.querySelector('input')) {
+                        value = cell.querySelector('input').value;
+                    } else {
+                        value = cell.innerText;
+                    }
                     row.push(`"${value}"`);
                 }
                 csv.push(row.join(','));
