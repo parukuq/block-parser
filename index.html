@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html>
 <head>
     <title>Enhanced Block Data Parser</title>
@@ -129,7 +129,8 @@
     <textarea id="rawData" placeholder="Paste your data here..."></textarea>
     <div class="button-container">
         <button onclick="parseData()">Parse Data</button>
-        <button onclick="clearData()">Clear</button>
+        <button onclick="clearData()">Clear Table</button>
+        <button onclick="copyAllRows()">Copy All Rows</button>
         <button onclick="exportToCSV()">Export to CSV</button>
     </div>
     <div id="debug"></div>
@@ -233,42 +234,14 @@
                     endTime
                 });
 
+                // Clear input after successful parsing
+                document.getElementById('rawData').value = '';
                 showMessage('Data processed successfully');
 
             } catch(error) {
                 showMessage('Error: ' + error.message, true);
                 console.error(error);
             }
-        }
-
-        function copyRowToClipboard(row) {
-            const rowData = [];
-            
-            for (let j = 0; j < row.cells.length - 1; j++) {
-                const cell = row.cells[j];
-                if (cell.querySelector('select')) {
-                    rowData.push(cell.querySelector('select').value);
-                } else if (cell.querySelector('input')) {
-                    rowData.push(cell.querySelector('input').value);
-                } else {
-                    rowData.push(cell.textContent.trim());
-                }
-            }
-            
-            const text = rowData.join('\t');
-            navigator.clipboard.writeText(text).then(() => {
-                const notification = document.getElementById('copyNotification');
-                notification.style.display = 'block';
-                
-                row.classList.add('highlight');
-                
-                setTimeout(() => {
-                    row.classList.remove('highlight');
-                    notification.style.display = 'none';
-                }, 2000);
-            }).catch(err => {
-                showMessage('Error copying data: ' + err, true);
-            });
         }
 
         function addTableRow(data) {
@@ -290,15 +263,6 @@
             opportunityInput.type = 'text';
             opportunityInput.placeholder = 'Paste opportunity here';
             opportunityInput.style.width = '100%';
-            
-            // Add paste event listener
-            opportunityInput.addEventListener('paste', (e) => {
-                // Small timeout to ensure the pasted content is available
-                setTimeout(() => {
-                    copyRowToClipboard(row);
-                }, 10);
-            });
-            
             opportunityCell.appendChild(opportunityInput);
 
             row.insertCell(6).textContent = data.hours || '';
@@ -330,6 +294,50 @@
             deleteBtn.onclick = function() { deleteRow(this); };
             deleteBtn.style.backgroundColor = '#ff4444';
             actionCell.appendChild(deleteBtn);
+        }
+
+        function copyAllRows() {
+            const table = document.getElementById('resultTable');
+            let allRowsText = [];
+            
+            for(let i = 1; i < table.rows.length; i++) {
+                const row = table.rows[i];
+                const rowData = [];
+                
+                for(let j = 0; j < row.cells.length - 1; j++) {
+                    const cell = row.cells[j];
+                    if(cell.querySelector('select')) {
+                        rowData.push(cell.querySelector('select').value);
+                    } else if(cell.querySelector('input')) {
+                        rowData.push(cell.querySelector('input').value);
+                    } else {
+                        rowData.push(cell.textContent.trim());
+                    }
+                }
+                
+                allRowsText.push(rowData.join('\t'));
+            }
+            
+            const textToCopy = allRowsText.join('\n');
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const notification = document.getElementById('copyNotification');
+                notification.textContent = 'All rows copied to clipboard!';
+                notification.style.display = 'block';
+                
+                for(let i = 1; i < table.rows.length; i++) {
+                    table.rows[i].classList.add('highlight');
+                }
+                
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                    for(let i = 1; i < table.rows.length; i++) {
+                        table.rows[i].classList.remove('highlight');
+                    }
+                }, 2000);
+            }).catch(err => {
+                showMessage('Error copying data: ' + err, true);
+            });
         }
 
         function clearData() {
