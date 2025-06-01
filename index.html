@@ -1,7 +1,8 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <title>Enhanced Block Data Parser</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -122,16 +123,29 @@
             85% { opacity: 1; }
             100% { opacity: 0; }
         }
+
+        #loginSelect {
+            width: 200px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
     <h2>Enhanced Block Data Parser</h2>
+    
+    <select id="loginSelect" onchange="updateLoginForAllRows()">
+        <option value="">Select Login</option>
+        <option value="parukuq">parukuq</option>
+        <option value="pritimz">pritiamz</option>
+    </select>
+
     <textarea id="rawData" placeholder="Paste your data here..."></textarea>
     <div class="button-container">
         <button onclick="parseData()">Parse Data</button>
         <button onclick="clearData()">Clear Table</button>
         <button onclick="copyAllRows()">Copy All Rows</button>
-        <button onclick="exportToCSV()">Export to CSV</button>
+        <button onclick="exportToCSV()">Export to Excel</button>
+        <button onclick="resetWorkbook()">Reset Workbook</button>
     </div>
     <div id="debug"></div>
     <div id="copyNotification">Row copied to clipboard!</div>
@@ -139,6 +153,7 @@
         <table id="resultTable">
             <thead>
                 <tr>
+                    <th>Login</th>
                     <th>Blocks</th>
                     <th>Domiciles</th>
                     <th>Block Cost</th>
@@ -159,8 +174,29 @@
     </div>
 
     <script>
+        let workbook = null;
+
+        function updateLoginForAllRows() {
+            const loginValue = document.getElementById('loginSelect').value;
+            const table = document.getElementById('resultTable');
+            const rows = table.getElementsByTagName('tr');
+            
+            // Start from 1 to skip header row
+            for(let i = 1; i < rows.length; i++) {
+                const loginCell = rows[i].cells[0];
+                loginCell.textContent = loginValue;
+            }
+        }
+
         function parseData() {
             const rawData = document.getElementById('rawData').value;
+            const loginValue = document.getElementById('loginSelect').value;
+            
+            if (!loginValue) {
+                showMessage('Please select a login first!', true);
+                return;
+            }
+
             document.getElementById('debug').innerHTML = 'Processing...';
 
             try {
@@ -225,6 +261,7 @@
                 }
 
                 addTableRow({
+                    login: loginValue,
                     blockId,
                     domicile,
                     cost,
@@ -234,7 +271,6 @@
                     endTime
                 });
 
-                // Clear input after successful parsing
                 document.getElementById('rawData').value = '';
                 showMessage('Data processed successfully');
 
@@ -248,29 +284,30 @@
             const table = document.getElementById('resultTable');
             const row = table.insertRow(-1);
             
-            row.insertCell(0).textContent = data.blockId || '';
-            row.insertCell(1).textContent = data.domicile || '';
-            row.insertCell(2).textContent = data.cost || '';
+            row.insertCell(0).textContent = data.login || '';
+            row.insertCell(1).textContent = data.blockId || '';
+            row.insertCell(2).textContent = data.domicile || '';
+            row.insertCell(3).textContent = data.cost || '';
             
-            const matchedCell = row.insertCell(3);
+            const matchedCell = row.insertCell(4);
             matchedCell.textContent = 'Matched';
             matchedCell.className = 'matched';
 
-            row.insertCell(4).textContent = '';
+            row.insertCell(5).textContent = '';
 
-            const opportunityCell = row.insertCell(5);
+            const opportunityCell = row.insertCell(6);
             const opportunityInput = document.createElement('input');
             opportunityInput.type = 'text';
             opportunityInput.placeholder = 'Paste opportunity here';
             opportunityInput.style.width = '100%';
             opportunityCell.appendChild(opportunityInput);
 
-            row.insertCell(6).textContent = data.hours || '';
-            row.insertCell(7).textContent = data.minutes || '';
-            row.insertCell(8).textContent = data.startTime || '';
-            row.insertCell(9).textContent = data.endTime || '';
+            row.insertCell(7).textContent = data.hours || '';
+            row.insertCell(8).textContent = data.minutes || '';
+            row.insertCell(9).textContent = data.startTime || '';
+            row.insertCell(10).textContent = data.endTime || '';
             
-            const commentCell = row.insertCell(10);
+            const commentCell = row.insertCell(11);
             const commentSelect = document.createElement('select');
             commentSelect.innerHTML = `
                 <option value=""></option>
@@ -279,7 +316,7 @@
             `;
             commentCell.appendChild(commentSelect);
 
-            const mmroCell = row.insertCell(11);
+            const mmroCell = row.insertCell(12);
             const mmroSelect = document.createElement('select');
             mmroSelect.innerHTML = `
                 <option value=""></option>
@@ -288,12 +325,57 @@
             `;
             mmroCell.appendChild(mmroSelect);
 
-            const actionCell = row.insertCell(12);
+            const actionCell = row.insertCell(13);
             const deleteBtn = document.createElement('button');
             deleteBtn.innerHTML = '🗑️';
             deleteBtn.onclick = function() { deleteRow(this); };
             deleteBtn.style.backgroundColor = '#ff4444';
             actionCell.appendChild(deleteBtn);
+        }
+
+        function exportToCSV() {
+            const table = document.getElementById('resultTable');
+            let data = [];
+            
+            // Get headers
+            let headers = [];
+            for(let i = 0; i < table.rows[0].cells.length - 1; i++) {
+                headers.push(table.rows[0].cells[i].innerText);
+            }
+            data.push(headers);
+            
+            // Get data
+            for(let i = 1; i < table.rows.length; i++) {
+                let row = [];
+                for(let j = 0; j < table.rows[i].cells.length - 1; j++) {
+                    let cell = table.rows[i].cells[j];
+                    let value;
+                    if (cell.querySelector('select')) {
+                        value = cell.querySelector('select').value;
+                    } else if (cell.querySelector('input')) {
+                        value = cell.querySelector('input').value;
+                    } else {
+                        value = cell.innerText;
+                    }
+                    row.push(value);
+                }
+                data.push(row);
+            }
+
+            if (!workbook) {
+                workbook = XLSX.utils.book_new();
+            }
+
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const now = new Date();
+            const sheetName = `Sheet_${now.getHours()}${now.getMinutes()}${now.getSeconds()}`;
+            XLSX.utils.book_append_sheet(workbook, ws, sheetName);
+            XLSX.writeFile(workbook, 'block_data.xlsx');
+        }
+
+        function resetWorkbook() {
+            workbook = null;
+            showMessage('Workbook reset successfully');
         }
 
         function copyAllRows() {
@@ -347,6 +429,7 @@
             }
             document.getElementById('rawData').value = '';
             document.getElementById('debug').innerHTML = '';
+            document.getElementById('loginSelect').value = '';
         }
 
         function deleteRow(btn) {
@@ -362,43 +445,6 @@
                 debug.className = '';
                 debug.textContent = '';
             }, 3000);
-        }
-
-        function exportToCSV() {
-            const table = document.getElementById('resultTable');
-            let csv = [];
-            
-            let headers = [];
-            for(let i = 0; i < table.rows[0].cells.length - 1; i++) {
-                headers.push(table.rows[0].cells[i].innerText);
-            }
-            csv.push(headers.join(','));
-            
-            for(let i = 1; i < table.rows.length; i++) {
-                let row = [];
-                for(let j = 0; j < table.rows[i].cells.length - 1; j++) {
-                    let cell = table.rows[i].cells[j];
-                    let value;
-                    if (cell.querySelector('select')) {
-                        value = cell.querySelector('select').value;
-                    } else if (cell.querySelector('input')) {
-                        value = cell.querySelector('input').value;
-                    } else {
-                        value = cell.innerText;
-                    }
-                    row.push(`"${value}"`);
-                }
-                csv.push(row.join(','));
-            }
-            
-            const csvContent = csv.join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute('download', 'block_data.csv');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
         }
     </script>
 </body>
