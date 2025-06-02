@@ -2,7 +2,9 @@
 <html>
 <head>
     <title>Enhanced Block Data Parser</title>
+    <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/2332/2332742.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * {
             box-sizing: border-box;
@@ -13,6 +15,20 @@
             padding: 20px;
             max-width: 1400px;
             margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+        }
+
+        .logo {
+            font-size: 2.5em;
+            color: #4CAF50;
         }
 
         table { 
@@ -131,7 +147,10 @@
     </style>
 </head>
 <body>
-    <h2>Enhanced Block Data Parser</h2>
+    <div class="header">
+        <i class="fas fa-database logo"></i>
+        <h2>Enhanced Block Data Parser</h2>
+    </div>
     
     <select id="loginSelect" onchange="updateLoginForAllRows()">
         <option value="">Select Login</option>
@@ -181,7 +200,6 @@
             const table = document.getElementById('resultTable');
             const rows = table.getElementsByTagName('tr');
             
-            // Start from 1 to skip header row
             for(let i = 1; i < rows.length; i++) {
                 const loginCell = rows[i].cells[0];
                 loginCell.textContent = loginValue;
@@ -337,14 +355,12 @@
             const table = document.getElementById('resultTable');
             let data = [];
             
-            // Get headers
             let headers = [];
             for(let i = 0; i < table.rows[0].cells.length - 1; i++) {
                 headers.push(table.rows[0].cells[i].innerText);
             }
             data.push(headers);
             
-            // Get data
             for(let i = 1; i < table.rows.length; i++) {
                 let row = [];
                 for(let j = 0; j < table.rows[i].cells.length - 1; j++) {
