@@ -24,11 +24,25 @@
             margin-bottom: 20px;
             padding: 20px;
             background: white;
+            justify-content: flex-start;
         }
 
         .logo {
             font-size: 2.5em;
             color: #4CAF50;
+        }
+
+        .header h2 {
+            margin: 0;
+        }
+
+        .creator-text {
+            margin-left: auto;
+            color: #333;
+            font-weight: bold;
+            font-size: 1.2em;
+            letter-spacing: 0.5px;
+            text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.1);
         }
 
         table { 
@@ -150,6 +164,7 @@
     <div class="header">
         <i class="fas fa-database logo"></i>
         <h2>Enhanced Block Data Parser</h2>
+        <div class="creator-text"><strong>Created by: parukuq@amazon.com</strong></div>
     </div>
     
     <select id="loginSelect" onchange="updateLoginForAllRows()">
@@ -192,7 +207,7 @@
         </table>
     </div>
 
-    <script>
+       <script>
         let workbook = null;
 
         function updateLoginForAllRows() {
