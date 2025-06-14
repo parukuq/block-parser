@@ -207,7 +207,7 @@
         </table>
     </div>
 
-       <script>
+    <script>
         let workbook = null;
 
         function updateLoginForAllRows() {
@@ -366,6 +366,29 @@
             actionCell.appendChild(deleteBtn);
         }
 
+        function clearData() {
+            if (document.getElementById('resultTable').rows.length > 1) {
+                if (confirm("Are you sure you want to clear the table? This action cannot be undone.")) {
+                    const table = document.getElementById('resultTable');
+                    while(table.rows.length > 1) {
+                        table.deleteRow(1);
+                    }
+                    document.getElementById('rawData').value = '';
+                    document.getElementById('debug').innerHTML = '';
+                    document.getElementById('loginSelect').value = '';
+                }
+            } else {
+                showMessage('Table is already empty!');
+            }
+        }
+
+        function deleteRow(btn) {
+            if (confirm("Are you sure you want to delete this row?")) {
+                const row = btn.parentNode.parentNode;
+                row.parentNode.removeChild(row);
+            }
+        }
+
         function exportToCSV() {
             const table = document.getElementById('resultTable');
             let data = [];
@@ -453,21 +476,6 @@
             });
         }
 
-        function clearData() {
-            const table = document.getElementById('resultTable');
-            while(table.rows.length > 1) {
-                table.deleteRow(1);
-            }
-            document.getElementById('rawData').value = '';
-            document.getElementById('debug').innerHTML = '';
-            document.getElementById('loginSelect').value = '';
-        }
-
-        function deleteRow(btn) {
-            const row = btn.parentNode.parentNode;
-            row.parentNode.removeChild(row);
-        }
-
         function showMessage(message, isError = false) {
             const debug = document.getElementById('debug');
             debug.textContent = message;
@@ -477,6 +485,28 @@
                 debug.textContent = '';
             }, 3000);
         }
+
+        // Add page refresh/close confirmation
+        window.addEventListener('beforeunload', function(e) {
+            const table = document.getElementById('resultTable');
+            if (table.rows.length > 1) {
+                e.preventDefault();
+                e.returnValue = '';
+                return 'Are you sure you want to leave? Any unsaved data will be lost.';
+            }
+        });
+
+        // Optional: Add warning for accidental back button press
+        window.onpopstate = function(event) {
+            if (document.getElementById('resultTable').rows.length > 1) {
+                if (!confirm("Are you sure you want to leave? Any unsaved data will be lost.")) {
+                    history.pushState(null, null, window.location.pathname);
+                }
+            }
+        };
+
+        // Push initial state
+        history.pushState(null, null, window.location.pathname);
     </script>
 </body>
 </html>
