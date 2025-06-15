@@ -45,6 +45,18 @@
             text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.1);
         }
 
+        #rowCount {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f4f4f4;
+            border-radius: 4px;
+            display: inline-block;
+            border-left: 4px solid #4CAF50;
+        }
+
         table { 
             width: 100%; 
             border-collapse: collapse; 
@@ -173,6 +185,8 @@
         <option value="pritiamz">pritiamz</option>
     </select>
 
+    <div id="rowCount">Total Blocks: 0</div>
+
     <textarea id="rawData" placeholder="Paste your data here..."></textarea>
     <div class="button-container">
         <button onclick="parseData()">Parse Data</button>
@@ -206,9 +220,15 @@
             <tbody></tbody>
         </table>
     </div>
-
     <script>
         let workbook = null;
+
+        function updateRowCount() {
+            const table = document.getElementById('resultTable');
+            const blockCount = table.rows.length - 1; // Subtract 1 to exclude header row
+            document.getElementById('rowCount').innerHTML = `Total Blocks: ${blockCount}`;
+            return blockCount;
+        }
 
         function updateLoginForAllRows() {
             const loginValue = document.getElementById('loginSelect').value;
@@ -305,6 +325,7 @@
                 });
 
                 document.getElementById('rawData').value = '';
+                updateRowCount();
                 showMessage('Data processed successfully');
 
             } catch(error) {
@@ -364,6 +385,8 @@
             deleteBtn.onclick = function() { deleteRow(this); };
             deleteBtn.style.backgroundColor = '#ff4444';
             actionCell.appendChild(deleteBtn);
+
+            updateRowCount();
         }
 
         function clearData() {
@@ -376,6 +399,7 @@
                     document.getElementById('rawData').value = '';
                     document.getElementById('debug').innerHTML = '';
                     document.getElementById('loginSelect').value = '';
+                    updateRowCount();
                 }
             } else {
                 showMessage('Table is already empty!');
@@ -386,6 +410,7 @@
             if (confirm("Are you sure you want to delete this row?")) {
                 const row = btn.parentNode.parentNode;
                 row.parentNode.removeChild(row);
+                updateRowCount();
             }
         }
 
@@ -507,6 +532,9 @@
 
         // Push initial state
         history.pushState(null, null, window.location.pathname);
+
+        // Initialize block count
+        updateRowCount();
     </script>
 </body>
 </html>
