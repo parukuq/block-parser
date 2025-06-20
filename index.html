@@ -15,6 +15,7 @@
             padding: 20px;
             max-width: 1400px;
             margin: 0 auto;
+            background-color: #f5f5f5;
         }
 
         .header {
@@ -24,7 +25,8 @@
             margin-bottom: 20px;
             padding: 20px;
             background: white;
-            justify-content: flex-start;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .logo {
@@ -34,6 +36,7 @@
 
         .header h2 {
             margin: 0;
+            color: #333;
         }
 
         .creator-text {
@@ -42,93 +45,76 @@
             font-weight: bold;
             font-size: 1.2em;
             letter-spacing: 0.5px;
-            text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.1);
+        }
+
+        .main-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .top-section {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .opportunity-section {
+            width: 400px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .login-section {
+            flex-grow: 1;
         }
 
         h3 {
             margin: 0;
             color: #4CAF50;
             padding: 10px 0;
-            font-size: 1em;
+            font-size: 1.1em;
         }
 
-        #loginSelect {
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        #loginSelect, #commentPreset, #mmroPreset {
             width: 100%;
             height: 38px;
-            margin-bottom: 10px;
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            background-color: white;
+            margin-bottom: 10px;
         }
 
-        #rowCount {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #4CAF50;
-            margin: 10px 0;
-            padding: 10px;
-            background-color: #f4f4f4;
-            border-radius: 4px;
-            display: inline-block;
-            border-left: 4px solid #4CAF50;
-        }
-
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 20px;
-            font-size: 14px;
-        }
-
-        th, td { 
-            border: 1px solid #ddd; 
-            padding: 12px 8px; 
-            text-align: left;
-        }
-
-        th {
-            background-color: #f4f4f4;
-            position: sticky;
-            top: 0;
-        }
-
-        .matched { 
-            background-color: #90EE90; 
-        }
-
-        .not-matched {
-            background-color: #ffcccb;
-        }
-
-        textarea { 
-            width: 100%; 
+        textarea {
+            width: 100%;
             padding: 15px;
             border: 1px solid #ddd;
             border-radius: 4px;
             resize: vertical;
+            background-color: white;
         }
 
         #opportunityData {
             height: 100px;
-            resize: none;
+            margin-bottom: 10px;
         }
 
         #rawData {
             height: 200px;
         }
 
-        #debug { 
-            margin: 10px 0; 
-            padding: 15px;
-            background: #f8f8f8;
-            border-radius: 4px;
-            border-left: 4px solid #4CAF50;
-        }
-
         .button-container {
-            margin: 15px 0;
             display: flex;
             gap: 10px;
+            margin: 15px 0;
         }
 
         button {
@@ -139,24 +125,66 @@
             border: none;
             border-radius: 4px;
             transition: background-color 0.3s;
+            font-weight: bold;
         }
 
         button:hover {
             background-color: #45a049;
         }
 
-        select, input {
+        table {
             width: 100%;
-            padding: 6px;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .matched {
+            background-color: #d4edda;
+        }
+
+        .not-matched {
+            background-color: #f8d7da;
+        }
+
+        .preset-controls {
+            background: white;
+            padding: 15px;
             border-radius: 4px;
+            margin-bottom: 10px;
             border: 1px solid #ddd;
         }
 
-        .error {
-            border-left: 4px solid #ff4444;
+        #rowCount {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: white;
+            border-radius: 4px;
+            display: inline-block;
+            border-left: 4px solid #4CAF50;
         }
 
-        .success {
+        #debug {
+            margin: 10px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 4px;
             border-left: 4px solid #4CAF50;
         }
 
@@ -174,33 +202,20 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            padding: 10px 20px;
+            padding: 15px 25px;
             background-color: #4CAF50;
             color: white;
             border-radius: 4px;
             display: none;
             animation: fadeInOut 2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
         @keyframes fadeInOut {
-            0% { opacity: 0; }
-            15% { opacity: 1; }
-            85% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-
-        .top-section {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .opportunity-section {
-            width: 300px;
-        }
-
-        .login-section {
-            flex-grow: 1;
+            0% { opacity: 0; transform: translateY(20px); }
+            15% { opacity: 1; transform: translateY(0); }
+            85% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(20px); }
         }
     </style>
 </head>
@@ -208,63 +223,85 @@
     <div class="header">
         <i class="fas fa-database logo"></i>
         <h2>Enhanced Block Data Parser</h2>
-        <div class="creator-text"><strong>Created by: parukuq@amazon.com</strong></div>
+        <div class="creator-text">Created by: parukuq@amazon.com</div>
     </div>
 
-    <div class="top-section">
-        <div class="opportunity-section">
-            <h3>Opportunity Data</h3>
-            <textarea 
-                id="opportunityData" 
-                placeholder="Paste opportunity data here..."
-                onpaste="setTimeout(fillOpportunity, 0)"
-                onchange="fillOpportunity()"
-            ></textarea>
+    <div class="main-container">
+        <div class="top-section">
+            <div class="opportunity-section">
+                <h3>Input Controls</h3>
+                <div class="preset-controls">
+                    <div class="input-group">
+                        <select id="commentPreset">
+                            <option value="">Select Comment Preset</option>
+                            <option>VRID added within 8 hrs to block start time</option>
+                            <option>VRID added with 12-34 hrs to block start time</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <select id="mmroPreset">
+                            <option value="">Select MMRO Status</option>
+                            <option>MMRO</option>
+                            <option>NON MMRO</option>
+                        </select>
+                    </div>
+                </div>
+                <textarea 
+                    id="opportunityData" 
+                    placeholder="Paste opportunity data here..."
+                    onpaste="setTimeout(fillOpportunity, 0)"
+                    onchange="fillOpportunity()"
+                ></textarea>
+            </div>
+            <div class="login-section">
+                <select id="loginSelect" onchange="updateLoginForAllRows()">
+                    <option value="">Select Login</option>
+                    <option value="parukuq">parukuq</option>
+                    <option value="pritiamz">pritiamz</option>
+                </select>
+                <textarea 
+                    id="rawData" 
+                    placeholder="Paste your block data here..."
+                ></textarea>
+            </div>
         </div>
-        <div class="login-section">
-            <select id="loginSelect" onchange="updateLoginForAllRows()">
-                <option value="">Select Login</option>
-                <option value="parukuq">parukuq</option>
-                <option value="pritiamz">pritiamz</option>
-            </select>
+
+        <div id="rowCount">Total Blocks: 0</div>
+        
+        <div class="button-container">
+            <button onclick="parseData()">Parse Data</button>
+            <button onclick="clearData()">Clear Table</button>
+            <button onclick="copyAllRows()">Copy All Rows</button>
+            <button onclick="exportToCSV()">Export to Excel</button>
+            <button onclick="resetWorkbook()">Reset Workbook</button>
         </div>
-    </div>
 
-    <div id="rowCount">Total Blocks: 0</div>
+        <div id="debug"></div>
+        <div id="copyNotification">Row copied to clipboard!</div>
 
-    <textarea id="rawData" placeholder="Paste your block data here..."></textarea>
-    <div class="button-container">
-        <button onclick="parseData()">Parse Data</button>
-        <button onclick="clearData()">Clear Table</button>
-        <button onclick="copyAllRows()">Copy All Rows</button>
-        <button onclick="exportToCSV()">Export to Excel</button>
-        <button onclick="resetWorkbook()">Reset Workbook</button>
-    </div>
-
-    <div id="debug"></div>
-    <div id="copyNotification">Row copied to clipboard!</div>
-    <div style="overflow-x: auto;">
-        <table id="resultTable">
-            <thead>
-                <tr>
-                    <th>Login</th>
-                    <th>Blocks</th>
-                    <th>Domiciles</th>
-                    <th>Block Cost</th>
-                    <th>Status</th>
-                    <th>RLB Cost</th>
-                    <th>Opportunity</th>
-                    <th>Hours</th>
-                    <th>Minutes</th>
-                    <th>Block start time</th>
-                    <th>Block end time</th>
-                    <th>Comments</th>
-                    <th>MMRO Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <div style="overflow-x: auto;">
+            <table id="resultTable">
+                <thead>
+                    <tr>
+                        <th>Login</th>
+                        <th>Blocks</th>
+                        <th>Domiciles</th>
+                        <th>Block Cost</th>
+                        <th>Status</th>
+                        <th>RLB Cost</th>
+                        <th>Opportunity</th>
+                        <th>Hours</th>
+                        <th>Minutes</th>
+                        <th>Block start time</th>
+                        <th>Block end time</th>
+                        <th>Comments</th>
+                        <th>MMRO Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
     <script>
         let workbook = null;
@@ -278,23 +315,32 @@
 
         function fillOpportunity() {
             const opportunityData = document.getElementById('opportunityData').value.trim();
-            if (!opportunityData) {
-                return;
-            }
+            const commentPreset = document.getElementById('commentPreset').value;
+            const mmroPreset = document.getElementById('mmroPreset').value;
+            
+            if (!opportunityData) return;
 
             const table = document.getElementById('resultTable');
             const rows = table.getElementsByTagName('tr');
             
-            // Find first empty opportunity cell
             for (let i = 1; i < rows.length; i++) {
                 const opportunityCell = rows[i].cells[6];
                 const opportunityInput = opportunityCell.querySelector('input');
                 
                 if (!opportunityInput.value) {
                     opportunityInput.value = opportunityData;
-                    // Clear the opportunity textarea
+                    
+                    if (commentPreset) {
+                        const commentSelect = rows[i].cells[11].querySelector('select');
+                        commentSelect.value = commentPreset;
+                    }
+                    
+                    if (mmroPreset) {
+                        const mmroSelect = rows[i].cells[12].querySelector('select');
+                        mmroSelect.value = mmroPreset;
+                    }
+                    
                     document.getElementById('opportunityData').value = '';
-                    // Highlight the filled row briefly
                     rows[i].classList.add('highlight');
                     setTimeout(() => {
                         rows[i].classList.remove('highlight');
@@ -302,7 +348,6 @@
                     return;
                 }
             }
-            
             showMessage('No empty opportunity cells found!', true);
         }
 
@@ -443,6 +488,10 @@
                 <option>VRID added within 8 hrs to block start time</option>
                 <option>VRID added with 12-34 hrs to block start time</option>
             `;
+            const currentCommentPreset = document.getElementById('commentPreset').value;
+            if (currentCommentPreset) {
+                commentSelect.value = currentCommentPreset;
+            }
             commentCell.appendChild(commentSelect);
 
             const mmroCell = row.insertCell(12);
@@ -452,6 +501,10 @@
                 <option>MMRO</option>
                 <option>NON MMRO</option>
             `;
+            const currentMmroPreset = document.getElementById('mmroPreset').value;
+            if (currentMmroPreset) {
+                mmroSelect.value = currentMmroPreset;
+            }
             mmroCell.appendChild(mmroSelect);
 
             const actionCell = row.insertCell(13);
@@ -480,6 +533,8 @@
                     document.getElementById('opportunityData').value = '';
                     document.getElementById('debug').innerHTML = '';
                     document.getElementById('loginSelect').value = '';
+                    document.getElementById('commentPreset').value = '';
+                    document.getElementById('mmroPreset').value = '';
                     updateRowCount();
                 }
             } else {
