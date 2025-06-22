@@ -551,47 +551,55 @@
         }
 
         function exportToCSV() {
-            const table = document.getElementById('resultTable');
-            let data = [];
-            
-            let headers = [];
-            for(let i = 0; i < table.rows[0].cells.length - 1; i++) {
-                headers.push(table.rows[0].cells[i].innerText);
-            }
-            data.push(headers);
-            
-            for(let i = 1; i < table.rows.length; i++) {
-                let row = [];
-                for(let j = 0; j < table.rows[i].cells.length - 1; j++) {
-                    let cell = table.rows[i].cells[j];
-                    let value;
-                    if (cell.querySelector('select')) {
-                        value = cell.querySelector('select').value;
-                    } else if (cell.querySelector('input')) {
-                        value = cell.querySelector('input').value;
-                    } else {
-                        value = cell.innerText;
-                    }
-                    row.push(value);
-                }
-                data.push(row);
-            }
+    // If workbook doesn't exist, create a new one
+    if (!workbook) {
+        workbook = XLSX.utils.book_new();
+    }
 
-            if (!workbook) {
-                workbook = XLSX.utils.book_new();
+    const table = document.getElementById('resultTable');
+    let data = [];
+    
+    // Get headers
+    let headers = [];
+    for(let i = 0; i < table.rows[0].cells.length - 1; i++) {
+        headers.push(table.rows[0].cells[i].innerText);
+    }
+    data.push(headers);
+    
+    // Get data from table
+    for(let i = 1; i < table.rows.length; i++) {
+        let row = [];
+        for(let j = 0; j < table.rows[i].cells.length - 1; j++) {
+            let cell = table.rows[i].cells[j];
+            let value;
+            if (cell.querySelector('select')) {
+                value = cell.querySelector('select').value;
+            } else if (cell.querySelector('input')) {
+                value = cell.querySelector('input').value;
+            } else {
+                value = cell.innerText;
             }
-
-            const ws = XLSX.utils.aoa_to_sheet(data);
-            const now = new Date();
-            const sheetName = `Sheet_${now.getHours()}${now.getMinutes()}${now.getSeconds()}`;
-            XLSX.utils.book_append_sheet(workbook, ws, sheetName);
-            XLSX.writeFile(workbook, 'block_data.xlsx');
+            row.push(value);
         }
+        data.push(row);
+    }
 
-        function resetWorkbook() {
-            workbook = null;
-            showMessage('Workbook reset successfully');
-        }
+    // Create a new worksheet
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    
+    // Generate unique sheet name with timestamp
+    const now = new Date();
+    const sheetName = `Sheet_${now.getHours()}${now.getMinutes()}${now.getSeconds()}`;
+    
+    // Add the worksheet to the existing workbook
+    XLSX.utils.book_append_sheet(workbook, ws, sheetName);
+    
+    // Write the workbook to file
+    XLSX.writeFile(workbook, 'block_data.xlsx');
+    
+    showMessage(`Added new sheet: ${sheetName}`);
+}
+
 
         function copyAllRows() {
             const table = document.getElementById('resultTable');
